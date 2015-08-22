@@ -81,9 +81,9 @@ function _queryActive(query) {
 
   return _.chain(queries)
     .each(function(query) {
-      if (query.type === 'formFactor' && query.value === matches.formFactor) {
+      if (query.type === 'formFactor' && query.value === queryTypes.formFactor) {
         query.active = true;
-      } else if (query.type === 'platform' && query.value === matches.platform){
+      } else if (query.type === 'platform' && query.value === queryTypes.platform){
         query.active = true;
       } else if (dimensionQueryTypes.indexOf(query.type) > -1) {
         query.active = _dimensionQueryMaybeActive(query);
