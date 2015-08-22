@@ -1,6 +1,3 @@
-// var package = require("./package.json");
-// var version = package.version;
-
 module.exports = function(grunt) {
   grunt.initConfig({
     titaniumifier: {

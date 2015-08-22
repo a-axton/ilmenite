@@ -1,10 +1,191 @@
 (function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.ilmenite = f()}})(function(){var define,module,exports;return (function e(t,n,r){function o(i,u){if(!n[i]){if(!t[i]){var a=typeof require=="function"&&require;if(!u&&a)return a.length===2?a(i,!0):a(i);if(s&&s.length===2)return s(i,!0);if(s)return s(i);var f=new Error("Cannot find module '"+i+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[i]={exports:{}};t[i][0].call(l.exports,function(e){var n=t[i][1][e];return o(n?n:e)},l,l.exports,e,t,n,r)}return n[i].exports}var i=Array.prototype.slice;Function.prototype.bind||Object.defineProperty(Function.prototype,"bind",{enumerable:!1,configurable:!0,writable:!0,value:function(e){function r(){return t.apply(this instanceof r&&e?this:e,n.concat(i.call(arguments)))}if(typeof this!="function")throw new TypeError("Function.prototype.bind - what is trying to be bound is not callable");var t=this,n=i.call(arguments,1);return r.prototype=Object.create(t.prototype),r.prototype.contructor=r,r}});var s=typeof require=="function"&&require;for(var u=0;u<r.length;u++)o(r[u]);return o})({1:[function(require,module,exports){
+var platform = require('./lib/platform');
+var _ = require('lodash');
+
+// [platform=ios formFactor=handheld]
+var queryTypes = {
+  platform: (function(){
+    if (platform.isIOS) {
+      return 'ios';
+    } else if (platform.isAndroid) {
+      return 'android';
+    } else if (platform.isMobileWeb) {
+      return 'mobileweb';
+    }
+  })(),
+  formFactor: (function(){
+    if (platform.isTablet){
+      return 'tablet';
+    } else {
+      return 'handheld';
+    }
+  })(),
+  width: (function(){
+    return Ti.Platform.getDisplayCaps().width;
+  })(),
+  height: (function(){
+    return Ti.Platform.getDisplayCaps().height;
+  })(),
+  density: (function(){
+    return Ti.Platform.getDisplayCaps().density;
+  })(),
+  dpi: (function(){
+    return Ti.Platform.getDisplayCaps().dpi;
+  })()
+}
+
+// checks property, return true if query
+function _isQuery(property) {
+  return _.isArray(property.match(/\[([^\]]+)]/));
+}
+
+// parses query into object
+function _parseQuery(query) {
+  var queries = query.replace(/[\[\]']+/g,'').split(' ');
+  
+  return _.map(queries, function(query) {
+    var queryParts = query.match(/([A-Za-z]+)(>|>=|=|<=|<+)([0-9A-Za-z]+)/);
+    
+    return {
+      type: queryParts[1],
+      comparator: queryParts[2],
+      value: queryParts[3],
+      active: false
+    }
+  });
+}
+
+function _dimensionQueryMaybeActive(query) {
+  var dim = queryTypes[query.type];
+  var comp = query.comparator;
+  var val = parseFloat(query.value);
+
+  if (comp === '=' && dim === val) {
+    return true;
+  } else if (comp === '>' && dim > val) {
+    return true;
+  } else if (comp === '>=' && dim >= val) {
+    return true;
+  } else if (comp === '<' && dim < val) {
+    return true;
+  } else if (comp === '<=' && dim <= val) {
+    return true;
+  } else {
+    return false;
+  }
+}
+
+// returns true if query is active
+function _queryActive(query) {
+  var queries = _parseQuery(query);
+  var dimensionQueryTypes = ['width', 'height', 'dpi', 'density'];
+
+  return _.chain(queries)
+    .each((query) => {
+      if (query.type === 'formFactor' && query.value === matches.formFactor) {
+        query.active = true;
+      } else if (query.type === 'platform' && query.value === matches.platform){
+        query.active = true;
+      } else if (dimensionQueryTypes.indexOf(query.type) > -1) {
+        query.active = _dimensionQueryMaybeActive(query);
+      }
+    })
+    .every('active')
+    .value();
+}
+
+function _processQueries(styles) {
+  // look for queries
+  _.each(styles, function(value, property) {
+    // if property is query
+    if (_isQuery(property)){
+      // query active, join styles
+      if (_queryActive(property)){
+        styles = _.merge(styles, styles[property]);
+      }
+      // remove query after joining
+      styles = _.omit(styles, property);
+    }
+  });
+
+  return styles;
+}
+
+function _mergeStyles(styles) {
+  // custom merge function
+  var merger = function (a, b) {
+    if (_.isObject(a)) {
+      return _.merge({}, a, b, merger);
+    } else {
+      return a || b;
+    }
+  };
+
+  // process array of styles and merge
+  var args = _.flatten([{}, styles, merger]);
+  return _.merge.apply(_, args);
+}
+
+function processStyles(styles) {
+  if (_.isArray(styles)) {
+    styles = _mergeStyles(_.invoke(styles, function(){
+      return _processQueries(this);
+    }));
+  } else {
+    styles = _processQueries(styles);
+  }
+
+  return styles;
+}
+
+module.exports = processStyles;
+
+},{"./lib/platform":2,"lodash":4}],2:[function(require,module,exports){
+function isTabletFallback() {
+	return !(Math.min(
+		Ti.Platform.displayCaps.platformHeight,
+		Ti.Platform.displayCaps.platformWidth
+	) < 700);
+}
+
+var isTablet = (function() {
+	if (Ti.Platform.name === 'iPhone OS') {
+		return Ti.Platform.osname === 'ipad';
+	} else if (Ti.Platform.name === 'android') {
+		var psc = Ti.Platform.Android.physicalSizeCategory;
+		return psc === Ti.Platform.Android.PHYSICAL_SIZE_CATEGORY_LARGE ||
+		       psc === Ti.Platform.Android.PHYSICAL_SIZE_CATEGORY_XLARGE;
+	} else if (Ti.Platform.name === 'mobileweb') {
+		return !(Math.min(
+			Ti.Platform.displayCaps.platformHeight,
+			Ti.Platform.displayCaps.platformWidth
+		) < 400);
+	} else {
+		return isTabletFallback();
+	}
+})();
+
+var isHandheld = !isTablet;
+
+module.exports = {
+  isTablet,
+  isHandheld,
+  isAndroid: Ti.Platform.name === 'android',
+  isIOS: Ti.Platform.name === 'iPhone OS',
+  isMobileWeb: Ti.Platform.name === 'mobileweb',
+  isIPad: Ti.Platform.osname === 'ipad',
+  isIPhone: Ti.Platform.osname === 'iphone',
+  version: Ti.Platform.version,
+  model: Ti.Platform.model
+}
+
+},{}],3:[function(require,module,exports){
 
 module.exports = (function () { return this; })();
 
 module.exports.location = {};
 
-},{}],2:[function(require,module,exports){
+},{}],4:[function(require,module,exports){
 (function (global){
 /**
  * @license
@@ -12359,186 +12540,5 @@ module.exports.location = {};
 }.call(this));
 
 }).call(this,require("--global--"))
-},{"--global--":1}],3:[function(require,module,exports){
-var platform = require('./platform');
-var _ = require('lodash');
-
-// [platform=ios formFactor=handheld]
-var queryTypes = {
-  platform: (function(){
-    if (platform.isIOS) {
-      return 'ios';
-    } else if (platform.isAndroid) {
-      return 'android';
-    } else if (platform.isMobileWeb) {
-      return 'mobileweb';
-    }
-  })(),
-  formFactor: (function(){
-    if (platform.isTablet){
-      return 'tablet';
-    } else {
-      return 'handheld';
-    }
-  })(),
-  width: (function(){
-    return Ti.Platform.getDisplayCaps().width;
-  })(),
-  height: (function(){
-    return Ti.Platform.getDisplayCaps().height;
-  })(),
-  density: (function(){
-    return Ti.Platform.getDisplayCaps().density;
-  })(),
-  dpi: (function(){
-    return Ti.Platform.getDisplayCaps().dpi;
-  })()
-}
-
-// checks property, return true if query
-function _isQuery(property) {
-  return _.isArray(property.match(/\[([^\]]+)]/));
-}
-
-// parses query into object
-function _parseQuery(query) {
-  var queries = query.replace(/[\[\]']+/g,'').split(' ');
-  
-  return _.map(queries, function(query) {
-    var queryParts = query.match(/([A-Za-z]+)(>|>=|=|<=|<+)([0-9A-Za-z]+)/);
-    
-    return {
-      type: queryParts[1],
-      comparator: queryParts[2],
-      value: queryParts[3],
-      active: false
-    }
-  });
-}
-
-function _dimensionQueryMaybeActive(query) {
-  var dim = queryTypes[query.type];
-  var comp = query.comparator;
-  var val = parseFloat(query.value);
-
-  if (comp === '=' && dim === val) {
-    return true;
-  } else if (comp === '>' && dim > val) {
-    return true;
-  } else if (comp === '>=' && dim >= val) {
-    return true;
-  } else if (comp === '<' && dim < val) {
-    return true;
-  } else if (comp === '<=' && dim <= val) {
-    return true;
-  } else {
-    return false;
-  }
-}
-
-// returns true if query is active
-function _queryActive(query) {
-  var queries = _parseQuery(query);
-  var dimensionQueryTypes = ['width', 'height', 'dpi', 'density'];
-
-  return _.chain(queries)
-    .each((query) => {
-      if (query.type === 'formFactor' && query.value === matches.formFactor) {
-        query.active = true;
-      } else if (query.type === 'platform' && query.value === matches.platform){
-        query.active = true;
-      } else if (dimensionQueryTypes.indexOf(query.type) > -1) {
-        query.active = _dimensionQueryMaybeActive(query);
-      }
-    })
-    .every('active')
-    .value();
-}
-
-function _processQueries(styles) {
-  // look for queries
-  _.each(styles, function(value, property) {
-    // if property is query
-    if (_isQuery(property)){
-      // query active, join styles
-      if (_queryActive(property)){
-        styles = _.merge(styles, styles[property]);
-      }
-      // remove query after joining
-      styles = _.omit(styles, property);
-    }
-  });
-
-  return styles;
-}
-
-function _mergeStyles(styles) {
-  // custom merge function
-  var merger = function (a, b) {
-    if (_.isObject(a)) {
-      return _.merge({}, a, b, merger);
-    } else {
-      return a || b;
-    }
-  };
-
-  // process array of styles and merge
-  var args = _.flatten([{}, styles, merger]);
-  return _.merge.apply(_, args);
-}
-
-function processStyles(styles) {
-  if (_.isArray(styles)) {
-    styles = _mergeStyles(_.invoke(styles, function(){
-      return _processQueries(this);
-    }));
-  } else {
-    styles = _processQueries(styles);
-  }
-
-  return styles;
-}
-
-module.exports = processStyles;
-
-},{"./platform":4,"lodash":2}],4:[function(require,module,exports){
-function isTabletFallback() {
-	return !(Math.min(
-		Ti.Platform.displayCaps.platformHeight,
-		Ti.Platform.displayCaps.platformWidth
-	) < 700);
-}
-
-var isTablet = (function() {
-	if (Ti.Platform.name === 'iPhone OS') {
-		return Ti.Platform.osname === 'ipad';
-	} else if (Ti.Platform.name === 'android') {
-		var psc = Ti.Platform.Android.physicalSizeCategory;
-		return psc === Ti.Platform.Android.PHYSICAL_SIZE_CATEGORY_LARGE ||
-		       psc === Ti.Platform.Android.PHYSICAL_SIZE_CATEGORY_XLARGE;
-	} else if (Ti.Platform.name === 'mobileweb') {
-		return !(Math.min(
-			Ti.Platform.displayCaps.platformHeight,
-			Ti.Platform.displayCaps.platformWidth
-		) < 400);
-	} else {
-		return isTabletFallback();
-	}
-})();
-
-var isHandheld = !isTablet;
-
-module.exports = {
-  isTablet,
-  isHandheld,
-  isAndroid: Ti.Platform.name === 'android',
-  isIOS: Ti.Platform.name === 'iPhone OS',
-  isMobileWeb: Ti.Platform.name === 'mobileweb',
-  isIPad: Ti.Platform.osname === 'ipad',
-  isIPhone: Ti.Platform.osname === 'iphone',
-  version: Ti.Platform.version,
-  model: Ti.Platform.model
-}
-
-},{}]},{},[3])(3)
+},{"--global--":3}]},{},[1])(1)
 });

@@ -1,4 +1,4 @@
-var platform = require('./platform');
+var platform = require('./lib/platform');
 var _ = require('lodash');
 
 // [platform=ios formFactor=handheld]
@@ -80,7 +80,7 @@ function _queryActive(query) {
   var dimensionQueryTypes = ['width', 'height', 'dpi', 'density'];
 
   return _.chain(queries)
-    .each((query) => {
+    .each(function(query) {
       if (query.type === 'formFactor' && query.value === matches.formFactor) {
         query.active = true;
       } else if (query.type === 'platform' && query.value === matches.platform){

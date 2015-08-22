@@ -2,7 +2,7 @@
   "name": "ilmenite",
   "version": "0.0.0",
   "description": "",
-  "main": "src/index.js",
+  "main": "index.js",
   "titaniumManifest": {
     "name": "ilmenite",
     "moduleid": "ilmenite",
@@ -24,8 +24,6 @@
   },
   "homepage": "https://github.com/a-axton/ilmenite",
   "devDependencies": {
-    "babel-runtime": "^5.8.20",
-    "babelify": "^6.2.0",
     "grunt-contrib-watch": "^0.6.1",
     "grunt-titaniumifier": "^1.1.0",
     "matchdep": "^0.3.0"
