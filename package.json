@@ -1,7 +1,7 @@
 {
   "name": "ilmenite",
   "version": "0.0.0",
-  "description": "",
+  "description": "Titanium style loader with built in conditional statements for platform, form factor, width, height and more",
   "main": "index.js",
   "titaniumManifest": {
     "name": "ilmenite",
@@ -29,6 +29,14 @@
     "matchdep": "^0.3.0"
   },
   "dependencies": {
-    "lodash": "^3.10.1"
+    "lodash.every": "^3.2.3",
+    "lodash.flatten": "^3.0.2",
+    "lodash.foreach": "^3.0.3",
+    "lodash.invoke": "^3.2.3",
+    "lodash.isarray": "^3.0.4",
+    "lodash.isobject": "^3.0.2",
+    "lodash.map": "^3.1.4",
+    "lodash.merge": "^3.3.2",
+    "lodash.omit": "^3.1.0"
   }
 }

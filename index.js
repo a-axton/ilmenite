@@ -1,5 +1,15 @@
 var platform = require('./lib/platform');
-var _ = require('lodash');
+var _ = {
+  isArray: require('lodash.isarray'),
+  isObject: require('lodash.isobject'),
+  map: require('lodash.map'),
+  each: require('lodash.foreach'),
+  every: require('lodash.every'),
+  merge: require('lodash.merge'),
+  flatten: require('lodash.flatten'),
+  invoke: require('lodash.invoke'),
+  omit: require('lodash.omit')
+}
 
 // [platform=ios formFactor=handheld]
 var queryTypes = {
@@ -79,8 +89,7 @@ function _queryActive(query) {
   var queries = _parseQuery(query);
   var dimensionQueryTypes = ['width', 'height', 'dpi', 'density'];
 
-  return _.chain(queries)
-    .each(function(query) {
+  return _.every(_.each(queries, function(query) {
       if (query.type === 'formFactor' && query.value === queryTypes.formFactor) {
         query.active = true;
       } else if (query.type === 'platform' && query.value === queryTypes.platform){
@@ -88,9 +97,7 @@ function _queryActive(query) {
       } else if (dimensionQueryTypes.indexOf(query.type) > -1) {
         query.active = _dimensionQueryMaybeActive(query);
       }
-    })
-    .every('active')
-    .value();
+    }), 'active');
 }
 
 function _processQueries(styles) {
