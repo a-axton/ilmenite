@@ -1,0 +1,46 @@
+{
+  "name": "ilmenite",
+  "version": "0.0.0",
+  "description": "",
+  "main": "src/index.js",
+  "titaniumManifest": {
+    "name": "ilmenite",
+    "moduleid": "ilmenite",
+    "guid": "6090b5fc-618f-92ef-de50-c36f1e83d3c0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/a-axton/ilmenite.git"
+  },
+  "keywords": [
+    "titanium",
+    "alloy",
+    "styles"
+  ],
+  "author": "Andy Axton",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/a-axton/ilmenite/issues"
+  },
+  "homepage": "https://github.com/a-axton/ilmenite",
+  "titaniumifier": {
+    "transforms": {
+      "babelify": {
+        "stage": 0,
+        "optional": [
+          "runtime"
+        ]
+      }
+    }
+  },
+  "devDependencies": {
+    "babel-runtime": "^5.8.20",
+    "babelify": "^6.2.0",
+    "grunt-contrib-watch": "^0.6.1",
+    "grunt-titaniumifier": "^1.1.0",
+    "matchdep": "^0.3.0"
+  },
+  "dependencies": {
+    "lodash": "^3.10.1"
+  }
+}
