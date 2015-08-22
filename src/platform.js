@@ -5,7 +5,7 @@ function isTabletFallback() {
 	) < 700);
 }
 
-let isTablet = (function() {
+var isTablet = (function() {
 	if (Ti.Platform.name === 'iPhone OS') {
 		return Ti.Platform.osname === 'ipad';
 	} else if (Ti.Platform.name === 'android') {
@@ -22,9 +22,9 @@ let isTablet = (function() {
 	}
 })();
 
-let isHandheld = !isTablet;
+var isHandheld = !isTablet;
 
-export default {
+module.exports = {
   isTablet,
   isHandheld,
   isAndroid: Ti.Platform.name === 'android',

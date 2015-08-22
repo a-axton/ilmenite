@@ -1,8 +1,8 @@
-import platform from './platform';
-import _ from 'lodash';
+var platform = require('./platform');
+var _ = require('lodash');
 
 // [platform=ios formFactor=handheld]
-let matches = {
+var queryTypes = {
   platform: (function(){
     if (platform.isIOS) {
       return 'ios';
@@ -40,23 +40,24 @@ function _isQuery(property) {
 
 // parses query into object
 function _parseQuery(query) {
-  let queries = query.replace(/[\[\]']+/g,'').split(' ');
+  var queries = query.replace(/[\[\]']+/g,'').split(' ');
+  
   return _.map(queries, function(query) {
-    let pairs = query.match(/([A-Za-z]+)(>|>=|=|<=|<+)([0-9A-Za-z]+)/);
-
+    var queryParts = query.match(/([A-Za-z]+)(>|>=|=|<=|<+)([0-9A-Za-z]+)/);
+    
     return {
-      type: pairs[1],
-      comparator: pairs[2],
-      value: pairs[3],
+      type: queryParts[1],
+      comparator: queryParts[2],
+      value: queryParts[3],
       active: false
     }
   });
 }
 
 function _dimensionQueryMaybeActive(query) {
-  let dim = matches[query.type];
-  let comp = query.comparator;
-  let val = parseFloat(query.value);
+  var dim = queryTypes[query.type];
+  var comp = query.comparator;
+  var val = parseFloat(query.value);
 
   if (comp === '=' && dim === val) {
     return true;
@@ -75,8 +76,8 @@ function _dimensionQueryMaybeActive(query) {
 
 // returns true if query is active
 function _queryActive(query) {
-  let queries = _parseQuery(query);
-  let dimensionQueries = ['width', 'height', 'dpi', 'density'];
+  var queries = _parseQuery(query);
+  var dimensionQueryTypes = ['width', 'height', 'dpi', 'density'];
 
   return _.chain(queries)
     .each((query) => {
@@ -84,7 +85,7 @@ function _queryActive(query) {
         query.active = true;
       } else if (query.type === 'platform' && query.value === matches.platform){
         query.active = true;
-      } else if (dimensionQueries.indexOf(query.type) > -1) {
+      } else if (dimensionQueryTypes.indexOf(query.type) > -1) {
         query.active = _dimensionQueryMaybeActive(query);
       }
     })
@@ -136,4 +137,4 @@ function processStyles(styles) {
   return styles;
 }
 
-export default processStyles;
+module.exports = processStyles;

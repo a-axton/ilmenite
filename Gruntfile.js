@@ -1,16 +1,9 @@
-var package = require("./package.json");
-var version = package.version;
+// var package = require("./package.json");
+// var version = package.version;
 
 module.exports = function(grunt) {
   grunt.initConfig({
     titaniumifier: {
-      "titaniumifier": {
-        "transforms": {
-          "babelify": {
-            "stage": 0
-          }
-        }
-      },
       "module": {
         options: {
           bundle: true,
@@ -24,7 +17,7 @@ module.exports = function(grunt) {
     },
     watch: {
       ilmenite: {
-        files: ["./src/**"],
+        files: ["src/**"],
         tasks: ['build'],
         options: {
           spawn: false

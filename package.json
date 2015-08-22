@@ -23,16 +23,6 @@
     "url": "https://github.com/a-axton/ilmenite/issues"
   },
   "homepage": "https://github.com/a-axton/ilmenite",
-  "titaniumifier": {
-    "transforms": {
-      "babelify": {
-        "stage": 0,
-        "optional": [
-          "runtime"
-        ]
-      }
-    }
-  },
   "devDependencies": {
     "babel-runtime": "^5.8.20",
     "babelify": "^6.2.0",
