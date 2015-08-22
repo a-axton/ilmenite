@@ -20,10 +20,16 @@ let matches = {
     }
   })(),
   width: (function(){
-    return Ti.Platform.displayCaps.platformWidth;
+    return Ti.Platform.getDisplayCaps().width;
   })(),
   height: (function(){
-    return Ti.Platform.displayCaps.platformHeight;
+    return Ti.Platform.getDisplayCaps().height;
+  })(),
+  density: (function(){
+    return Ti.Platform.getDisplayCaps().density;
+  })(),
+  dpi: (function(){
+    return Ti.Platform.getDisplayCaps().dpi;
   })()
 }
 
@@ -70,6 +76,7 @@ function _dimensionQueryMaybeActive(query) {
 // returns true if query is active
 function _queryActive(query) {
   let queries = _parseQuery(query);
+  let dimensionQueries = ['width', 'height', 'dpi', 'density'];
 
   return _.chain(queries)
     .each((query) => {
@@ -77,7 +84,7 @@ function _queryActive(query) {
         query.active = true;
       } else if (query.type === 'platform' && query.value === matches.platform){
         query.active = true;
-      } else if (query.type === 'width' || query.type === 'height') {
+      } else if (dimensionQueries.indexOf(query.type) > -1) {
         query.active = _dimensionQueryMaybeActive(query);
       }
     })
@@ -86,8 +93,6 @@ function _queryActive(query) {
 }
 
 function _processQueries(styles) {
-  let bracketsRx = /\[([^\]]+)]/;
-
   // look for queries
   _.each(styles, function(value, property) {
     // if property is query
@@ -105,8 +110,7 @@ function _processQueries(styles) {
 }
 
 function _mergeStyles(styles) {
-  // Custom merge function ORs together non-object values, recursively
-  // calls itself on Objects.
+  // custom merge function
   var merger = function (a, b) {
     if (_.isObject(a)) {
       return _.merge({}, a, b, merger);
@@ -115,8 +119,7 @@ function _mergeStyles(styles) {
     }
   };
 
-
-  // Allow roles to be passed to _.merge as an array of arbitrary length
+  // process array of styles and merge
   var args = _.flatten([{}, styles, merger]);
   return _.merge.apply(_, args);
 }
