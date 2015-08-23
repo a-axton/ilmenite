@@ -1,5 +1,5 @@
 ## Titanium Ilmenite (WIP)
-Titanium style loader with built in conditional statements for platform, form factor, width, height and more. Built to work with [react-titanium][rt] but works with Titanium/Alloy thanks to [titaniumifier][t].
+Titanium style loader with built in conditional statements for platform, form factor, width, height and more. Built to work with [react-titanium][rt] but works with Titanium/Alloy thanks to [titaniumifier][t]. This is still a WIP and as such the API is subject to change.
 
 [rt]: https://github.com/yuchi/react-titanium
 [t]: https://github.com/smclab/titaniumifier
