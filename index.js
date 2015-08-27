@@ -1,24 +1,6 @@
 var platform = require('./lib/platform');
-
-// check for existing lodash module
-try {
-  var _ = require('lodash');
-} 
-// use individual modules to reduce
-// bundled filesize for titanium module
-catch(e) {
-  var _ = {
-    isArray: require('lodash.isarray'),
-    isObject: require('lodash.isobject'),
-    map: require('lodash.map'),
-    each: require('lodash.foreach'),
-    every: require('lodash.every'),
-    merge: require('lodash.merge'),
-    flatten: require('lodash.flatten'),
-    invoke: require('lodash.invoke'),
-    omit: require('lodash.omit')
-  } 
-}
+var shortcuts = require('./lib/shortcuts');
+var _ = require('./lib/lodash-deps');
 
 // [platform=ios formFactor=handheld]
 var queryTypes = {
@@ -149,6 +131,10 @@ function processStyles(styles) {
   } else {
     styles = _processQueries(styles);
   }
+
+  styles = shortcuts.apply(styles);
+
+  // shortcuts.apply(styles);
 
   return styles;
 }

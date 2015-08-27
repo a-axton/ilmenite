@@ -24,7 +24,9 @@
   },
   "homepage": "https://github.com/a-axton/ilmenite",
   "devDependencies": {
+    "grunt-contrib-copy": "^0.8.1",
     "grunt-contrib-watch": "^0.6.1",
+    "grunt-exec": "^0.4.6",
     "grunt-titaniumifier": "^1.1.0",
     "matchdep": "^0.3.0"
   },

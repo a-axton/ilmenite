@@ -12,12 +12,31 @@ module.exports = function(grunt) {
         }]
       }
     },
+    copy: {
+      main: {
+        files: [
+          {expand: true, src: ['dist/ilmenite.js'], dest: 'test/ilmenite-test/Resources', filter: 'isFile', flatten: true}
+        ]
+      } 
+    },
+    exec: {
+      server: {
+        cmd: 'tishadow server'
+      },
+      run: {
+        cmd: 'tishadow run',
+        cwd: 'test/ilmenite-test'
+      },
+      test: {
+        cmd: 'tishadow spec',
+        cwd: 'test/ilmenite-test'
+      }
+    },
     watch: {
-      ilmenite: {
-        files: ["src/**"],
-        tasks: ['build'],
+      scripts: {
+        files: ['lib/**/*.js','index.js'],
+        tasks: ['build','exec:test'],
         options: {
-          spawn: false
         }
       },
     }
@@ -26,6 +45,6 @@ module.exports = function(grunt) {
   require('matchdep').filterDev('grunt-*').forEach(grunt.loadNpmTasks);
 
   grunt.registerTask('default', 'build');
-  grunt.registerTask('build', 'titaniumifier');
-  grunt.registerTask('dev', ['build', 'watch']);
+  grunt.registerTask('build', ['titaniumifier', 'copy']);
+  grunt.registerTask('dev', ['build', 'exec:server', 'exec:run', 'watch:scripts']);
 };
